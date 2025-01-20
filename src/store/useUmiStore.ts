@@ -18,7 +18,7 @@ interface UmiState {
 }
 
 const useUmiStore = create<UmiState>()((set, get) => ({
-  umi: createUmi("http://api.devnet.solana.com").use(
+  umi: createUmi(process.env.NEXT_PUBLIC_ALCHEMY_URL as string).use(
     signerIdentity(
       createNoopSigner(publicKey("11111111111111111111111111111111"))
     )

@@ -25,7 +25,7 @@ import { Label } from "./ui/label";
 import { mintNFT } from "@/lib/mintNFT";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSolanaWallets } from "@privy-io/react-auth";
+import { useSolanaWallets, getAccessToken } from "@privy-io/react-auth";
 
 const wait = (ms: number) => {
   return new Promise((resolve) => {
@@ -86,15 +86,22 @@ export function NFTForm({ getNFTs }: any) {
       return;
     }
     try {
+      const accessToken = await getAccessToken()
       setLoading(true);
       const fileUploadReq = await fetch("/api/file", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: file,
       });
       const fileUpload = await fileUploadReq.json();
 
       const imageUploadReq = await fetch("/api/image", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: image,
       });
       const imageUpload = await imageUploadReq.json();
@@ -103,6 +110,7 @@ export function NFTForm({ getNFTs }: any) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           name: values.name,

@@ -113,7 +113,7 @@ export function NFTGrid() {
   return (
     <div className="flex flex-col max-w-[500px] gap-4 items-center justify-start mb-12">
       <NFTForm getNFTs={getNFTs} />
-      {nfts.map((nft: NFT) => (
+      {/* {nfts.map((nft: NFT) => (
         <Card
           className="flex flex-col w-full gap-2 overflow-hidden"
           key={nft.id}
@@ -136,7 +136,7 @@ export function NFTGrid() {
             )}
           </div>
         </Card>
-      ))}
+      ))} */}
     </div>
   );
 };

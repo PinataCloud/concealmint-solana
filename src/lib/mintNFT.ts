@@ -6,18 +6,18 @@ export async function mintNFT(name: string, uri: string) {
   try {
     const umi = umiWithCurrentWalletAdapter();
 
-    const collectionAddress = publicKey("2AQCkfmrftMrK4hTLXBKBwGAZYMrKh5CFJrksmQBGy7t");
+    // const collectionAddress = publicKey("2AQCkfmrftMrK4hTLXBKBwGAZYMrKh5CFJrksmQBGy7t");
 
     umi.use(mplTokenMetadata())
 
-    // const collectionMint = generateSigner(umi)
-    // await createNft(umi, {
-    //   mint: collectionMint,
-    //   name: 'CONCEALMINT',
-    //   uri: uri,
-    //   sellerFeeBasisPoints: percentAmount(0), // 5.5%
-    //   isCollection: true,
-    // }).sendAndConfirm(umi)
+    const collectionMint = generateSigner(umi)
+    await createNft(umi, {
+      mint: collectionMint,
+      name: 'CONCEALMINT',
+      uri: uri,
+      sellerFeeBasisPoints: percentAmount(0), // 5.5%
+      isCollection: true,
+    }).sendAndConfirm(umi)
 
     const nftMint = generateSigner(umi);
 
@@ -28,7 +28,7 @@ export async function mintNFT(name: string, uri: string) {
       updateAuthority: umi.identity.publicKey,
       sellerFeeBasisPoints: percentAmount(0),
       collection: {
-        key: collectionAddress, // Your collection's mint address
+        key: collectionMint.publicKey, // Your collection's mint address
         verified: false, // Will be verified in a separate transaction
       },
     }).sendAndConfirm(umi);
@@ -37,7 +37,7 @@ export async function mintNFT(name: string, uri: string) {
 
     await verifyCollectionV1(umi, {
       metadata,
-      collectionMint: collectionAddress,
+      collectionMint: collectionMint.publicKey,
       authority: umi.identity,
     }).sendAndConfirm(umi);
 

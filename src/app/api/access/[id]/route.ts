@@ -26,7 +26,7 @@ export async function GET(
   try {
     const user = await privy.getUserById(auth.userId);
 
-    const umi = createUmi('https://api.devnet.solana.com').use(dasApi());
+    const umi = createUmi(process.env.NEXT_PUBLIC_ALCHEMY_URL as string).use(dasApi());
     const asset = await fetchDigitalAssetWithTokenByMint(umi, publicKey(params.id));
 
     // Check if the user's wallet matches the token owner
@@ -36,22 +36,8 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Replaced with Indexer
-    // const tokenURI = await baseClient.readContract({
-    // 	address: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS as `0x`,
-    // 	abi: contract.abi,
-    // 	functionName: "tokenURI",
-    // 	args: [params.id],
-    // });
-
-    // const { data: nftData } = await ipfsClient.gateways.get(tokenURI as string);
-
-    // const nft = nftData as unknown as NFT;
-
     const nftReq = await fetch(`${asset.metadata.uri}`);
     const nftData = await nftReq.json();
-
-    console.log(nftData.properties.files[1].uri)
 
     const url = await filesClient.gateways.createSignedURL({
       cid: nftData.properties.files[1].uri,
