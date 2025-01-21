@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [connected]);
 
   const authenticate = async () => {
+    // @ts-ignore
     if (!connected || !publicKey || !wallet?.adapter.signIn) {
       throw new Error("Wallet not connected or doesn't support signIn");
     }
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const signInInput: SolanaSignInInput = await response.json();
 
       // Request sign-in from wallet
+      // @ts-ignore
       const output = await wallet.adapter.signIn(signInInput);
 
       // Verify sign-in with backend
