@@ -127,32 +127,30 @@ export function NFTForm() {
       const mint = await mintNFT(values.name, metadataUpload.tokenURI);
       console.log(mint)
 
-      const metadataUpdateReq = await fetch("/api/metadata", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          name: values.name,
-          description: values.description,
-          external_url: `https://solana.concealmint.com/nft/${mint}`,
-          image: imageUpload.cid,
-          file: fileUpload.cid,
-        }),
-      });
-      const metadataUpdate = await metadataUpdateReq.json();
-      await delay(3000)
-      const update = await updateNft(mint as string, metadataUpdate.tokenURI)
+      // const metadataUpdateReq = await fetch("/api/metadata", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${accessToken}`,
+      //   },
+      //   body: JSON.stringify({
+      //     name: values.name,
+      //     description: values.description,
+      //     external_url: `https://solana.concealmint.com/nft/${mint}`,
+      //     image: imageUpload.cid,
+      //     file: fileUpload.cid,
+      //   }),
+      // });
+      // const metadataUpdate = await metadataUpdateReq.json();
+      // const update = await updateNft(mint as string, metadataUpdate.tokenURI)
       setOpen(false);
       setLoading(false);
       toast({
         title: "Mint Complete! 🎉",
-        description: "Please wait a few minutes for NFT to show up on the grid",
+        description: "Please wait while you are redirected",
       });
-      if (update) {
-        router.push(`${process.env.NEXT_PUBLIC_APP_URL}/nft/${mint}`)
-      }
+      await delay(4000)
+      router.push(`${process.env.NEXT_PUBLIC_APP_URL}/nft/${mint}`)
     } catch (error) {
       setLoading(false);
       toast({

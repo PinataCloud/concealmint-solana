@@ -2,7 +2,9 @@ import umiWithCurrentWalletAdapter from "./umi/umiWithCurrentWalletAdapter";
 import { createNft, createV1, fetchMetadataFromSeeds, findMetadataPda, Metadata, mintV1, mplTokenMetadata, TokenStandard, updateV1, verifyCollectionV1 } from "@metaplex-foundation/mpl-token-metadata";
 import { generateSigner, percentAmount, publicKey, sol } from "@metaplex-foundation/umi";
 
-export const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+export const delay = (ms: number): Promise<void> => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
 
 export async function mintNFT(name: string, uri: string) {
   try {
@@ -31,6 +33,7 @@ export async function mintNFT(name: string, uri: string) {
 
 export async function updateNft(nftAddress: string, uri: string) {
   try {
+    await delay(4000)
     const umi = umiWithCurrentWalletAdapter();
     umi.use(mplTokenMetadata())
 

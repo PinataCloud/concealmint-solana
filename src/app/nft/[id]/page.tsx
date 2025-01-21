@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Footer } from "@/components/footer"
 import { LoginButton } from "@/components/login-button"
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { CheckIcon, CopyIcon, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -26,9 +26,26 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [nft, setNft] = useState<NFT>();
   const { toast } = useToast();
   const { accessToken, authenticated } = useAuth();
+
+  const wait = () => new Promise((resolve) => setTimeout(resolve, 1000));
+
+  async function handleCopy() {
+    setCopied(true);
+    await wait();
+    setCopied(false);
+  }
+
+
+  async function copyToClipboard() {
+    navigator.clipboard
+      .writeText(`https://solana.concealmint.com/nft/${tokenAddress}`)
+      .then(async () => await handleCopy())
+      .catch(() => alert("Failed to copy"));
+  }
 
   async function accessNFTFile() {
     try {
@@ -121,7 +138,7 @@ export default function Page({ params }: { params: { id: string } }) {
         >
           <img
             className="max-w-sm"
-            src={nft.image || "/pfp.png"}
+            src={nft.image}
             alt={nft.name}
           />
           <div className="flex flex-col gap-2 p-4">
@@ -135,6 +152,19 @@ export default function Page({ params }: { params: { id: string } }) {
             ) : (
               <Button onClick={accessNFTFile}>Access File</Button>
             )}
+            <Button variant="secondary" onClick={copyToClipboard} className="flex gap-2">
+              {copied ? (
+                <>
+                  <CheckIcon className="h-4 w-4" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <CopyIcon className="h-4 w-4" />
+                  Copy Link
+                </>
+              )}
+            </Button>
           </div>
         </Card>
       )}
