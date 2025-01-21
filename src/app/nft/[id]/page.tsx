@@ -90,21 +90,26 @@ export default function Page({ params }: { params: { id: string } }) {
   }
 
   const getNFTs = useCallback(async () => {
-    try {
-      setLoading(true);
-      const nftReq = await fetch(`/api/nfts?tokenAddress=${tokenAddress}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-      const nftData = await nftReq.json();
-      console.log(nftData)
-      setNft(nftData);
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
+    let success = false;
+    while (!success) {
+      try {
+        setLoading(true);
+        const nftReq = await fetch(`/api/nfts?tokenAddress=${tokenAddress}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const nftData = await nftReq.json();
+        console.log(nftData)
+        setNft(nftData);
+        setLoading(false);
+        success = true;
+      } catch (error) {
+        console.log(error);
+        setLoading(false);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     }
   }, [tokenAddress, accessToken]);
 
