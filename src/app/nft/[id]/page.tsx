@@ -90,32 +90,39 @@ export default function Page({ params }: { params: { id: string } }) {
   }
 
   const getNFTs = useCallback(async () => {
-    let success = false;
-    while (!success) {
-      try {
-        setLoading(true);
-        const nftReq = await fetch(`/api/nfts?tokenAddress=${tokenAddress}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        const nftData = await nftReq.json();
-        console.log(nftData)
-        setNft(nftData);
-        setLoading(false);
-        success = true;
-      } catch (error) {
-        console.log(error);
-        setLoading(false);
-        await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const nftReq = await fetch(`/api/nfts?tokenAddress=${tokenAddress}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!nftReq.ok) {
+        throw new Error('Failed to fetch NFT');
       }
+
+      const nftData = await nftReq.json();
+      setNft(nftData);
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      // Retry after 2 seconds
+      setTimeout(() => {
+        getNFTs();
+      }, 2000);
     }
   }, [tokenAddress, accessToken]);
 
   useEffect(() => {
+    setLoading(true); // Ensure loading is true when starting
     getNFTs();
-  }, []);
+
+    // Cleanup function to handle component unmount
+    return () => {
+      setLoading(false);
+    };
+  }, [getNFTs]);
 
 
   return (
