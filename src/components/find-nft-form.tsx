@@ -24,7 +24,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSolanaWallets, getAccessToken } from "@privy-io/react-auth";
 import { useRouter } from "next/navigation";
 
 const wait = (ms: number) => {
@@ -42,7 +41,6 @@ export function FindNFTForm() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { wallets } = useSolanaWallets()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -68,7 +66,7 @@ export function FindNFTForm() {
         }
       }}
     >
-      <Button className="w-full font-bold" asChild>
+      <Button variant="secondary" className="w-full font-bold" asChild>
         <DialogTrigger>Locate Existing NFT</DialogTrigger>
       </Button>
       <DialogContent

@@ -1,6 +1,7 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { useAuth } from "@/providers/authProvider";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
 import {
@@ -8,68 +9,36 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useEffect, useState } from "react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { useToast } from "@/hooks/use-toast";
 
 export function LoginButton() {
-  const { ready, authenticated, login, user, logout } = usePrivy();
+  const { authenticated, authenticate, logout } = useAuth();
   const { connected, disconnect } = useWallet();
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
+  const { toast } = useToast();
 
-  // Handle Privy authentication state changes
   useEffect(() => {
-    if (authenticated && !connected) {
-      setShowWalletPrompt(true);
-    } else if (connected) {
-      setShowWalletPrompt(false);
+    if (connected && !authenticated) {
+      handleLogin();
     }
-  }, [authenticated, connected]);
+  }, [connected]);
 
-  function truncateAddress(address: string | undefined): string {
-    if (!address) return "";
-    return `${address.slice(0, 4)}...${address.slice(-4)}`;
-  }
+  const handleLogin = async () => {
+    try {
+      await authenticate();
+    } catch (error) {
+      toast({
+        title: "Authentication failed",
+        description: (error as Error).message,
+        variant: "destructive",
+      });
+    }
+  };
 
-  if (!authenticated) {
-    return (
-      <Button disabled={!ready} onClick={login}>
-        Log in
-      </Button>
-    );
-  }
-
-  if (authenticated && showWalletPrompt && !connected) {
-    return (
-      <div className="flex flex-col gap-2 items-center">
-        <p className="text-sm">Please connect your Solana wallet</p>
-        <WalletMultiButton />
-      </div>
-    );
-  }
 
   return (
-    <Popover>
-      <PopoverTrigger>
-        <Button>
-          <p className="font-bold font-mono">
-            {truncateAddress(user?.wallet?.address)}
-          </p>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="font-sans flex flex-col gap-4 items-center max-w-[130px]">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={async () => {
-            await disconnect();
-            await logout();
-          }}
-        >
-          <LogOut />
-          Log out
-        </Button>
-      </PopoverContent>
-    </Popover>
+    <WalletMultiButton />
   );
 }

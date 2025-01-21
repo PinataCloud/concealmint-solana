@@ -4,7 +4,6 @@ import { generateSigner, percentAmount, publicKey, sol } from "@metaplex-foundat
 
 export const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
-
 export async function mintNFT(name: string, uri: string) {
   try {
     const umi = umiWithCurrentWalletAdapter();
@@ -36,40 +35,21 @@ export async function updateNft(nftAddress: string, uri: string) {
     umi.use(mplTokenMetadata())
 
     const mint = publicKey(nftAddress);
-    let nft: Metadata | null = null;
-    let attempts = 0;
-    const maxAttempts = 10;
+    const nft = await fetchMetadataFromSeeds(umi, { mint });
 
-    while (attempts < maxAttempts) {
-      try {
-        nft = await fetchMetadataFromSeeds(umi, { mint });
-
-        const updateTx = await updateV1(umi, {
-          mint,
-          authority: umi.identity,
-          data: {
-            ...nft,
-            uri: `https://dweb.mypinata.cloud/ipfs/${uri}`,
-            name: nft.name,
-            symbol: nft.symbol
-          },
-          primarySaleHappened: true,
-          isMutable: true,
-        }).sendAndConfirm(umi);
-
-        return updateTx;
-
-      } catch (e) {
-        attempts++;
-        if (attempts === maxAttempts) {
-          throw new Error('Failed to fetch metadata after maximum attempts');
-        }
-        await delay(2000);
-      }
-    }
-
-    throw new Error('Failed to update NFT metadata');
-
+    const updateTx = await updateV1(umi, {
+      mint,
+      authority: umi.identity,
+      data: {
+        ...nft,
+        uri: `https://dweb.mypinata.cloud/ipfs/${uri}`,
+        name: nft.name,
+        symbol: nft.symbol
+      },
+      primarySaleHappened: true,
+      isMutable: true,
+    }).sendAndConfirm(umi);
+    return updateTx;
   } catch (error) {
     console.log(error)
     return error

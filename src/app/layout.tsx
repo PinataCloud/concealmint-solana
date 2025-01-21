@@ -6,6 +6,7 @@ import "./globals.css";
 import { UmiProvider } from "@/providers/umiProvider";
 import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider } from "@/providers/authProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -54,10 +55,10 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} font-mono antialiased`}
           >
             <ThemeProviderWrapper>
-              <Providers>
+              <AuthProvider>
                 {children}
                 <Toaster />
-              </Providers>
+              </AuthProvider>
             </ThemeProviderWrapper>
           </body>
         </html>

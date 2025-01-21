@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react";
-import { usePrivy } from "@privy-io/react-auth";
 import { Footer } from "@/components/footer"
 import { LoginButton } from "@/components/login-button"
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/providers/authProvider";
 
 interface NFT {
   id: string;
@@ -24,16 +24,15 @@ interface NFT {
 export default function Page({ params }: { params: { id: string } }) {
   const tokenAddress = params.id
 
-  const { ready, authenticated, getAccessToken } = usePrivy();
   const [loading, setLoading] = useState(true);
   const [verifying, setVerifying] = useState(false);
   const [nft, setNft] = useState<NFT>();
   const { toast } = useToast();
+  const { accessToken, authenticated } = useAuth();
 
   async function accessNFTFile() {
     try {
       setVerifying(true)
-      const accessToken = await getAccessToken();
       const accessReq = await fetch(`/api/access/${tokenAddress}`, {
         method: "GET",
         headers: {
@@ -76,7 +75,6 @@ export default function Page({ params }: { params: { id: string } }) {
   const getNFTs = useCallback(async () => {
     try {
       setLoading(true);
-      const accessToken = await getAccessToken();
       const nftReq = await fetch(`/api/nfts?tokenAddress=${tokenAddress}`, {
         method: "GET",
         headers: {
@@ -91,27 +89,22 @@ export default function Page({ params }: { params: { id: string } }) {
       console.log(error);
       setLoading(false);
     }
-  }, [getAccessToken]);
+  }, [tokenAddress, accessToken]);
 
   useEffect(() => {
-    if (authenticated) {
-      getNFTs();
-    }
-  }, [authenticated, getNFTs]);
+    getNFTs();
+  }, []);
 
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 max-w-sm mx-auto mt-12 sm:px-0 px-2">
-      <h1 className="text-4xl font-mono font-extrabold">CONCEALMINT</h1>
+      <Link href="/">
+        <h1 className="text-4xl font-mono font-extrabold">CONCEALMINT</h1>
+      </Link>
       <p className="font-mono text-center">
         {authenticated ? "Unlock your NFT" : "Connect your wallet to unlock this NFT"}
       </p>
-      <div className="flex gap-2 items-center">
-        <LoginButton />
-        <Link href="/">
-          <Button variant="secondary">Home</Button>
-        </Link>
-      </div>
+      <LoginButton />
       {loading ? (
         <Card className="flex flex-col w-full gap-2 overflow-hidden">
           <Skeleton className="h-[300px] w-full" />

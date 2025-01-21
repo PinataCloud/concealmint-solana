@@ -22,21 +22,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "./ui/label";
-import { mintNFT, updateNft } from "@/lib/mintNFT";
+import { mintNFT, updateNft, delay } from "@/lib/mintNFT";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useSolanaWallets, getAccessToken } from "@privy-io/react-auth";
-
-const wait = (ms: number) => {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-};
+import { useAuth } from "@/providers/authProvider"; // Add this import
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(2).max(50),
   description: z.string().min(2).max(250),
-  externalUrl: z.string().url(),
 });
 
 interface NFTMetadata {
@@ -61,7 +55,8 @@ export function NFTForm() {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { wallets } = useSolanaWallets()
+  const { accessToken } = useAuth();
+  const router = useRouter()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFile(e.target?.files?.[0]);
@@ -84,8 +79,16 @@ export function NFTForm() {
       console.log("Image or File missing");
       return;
     }
+    if (!accessToken) {
+      toast({
+        title: "Authentication required",
+        description: "Please connect your wallet and sign in first",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const accessToken = await getAccessToken()
       setLoading(true);
       const fileUploadReq = await fetch("/api/file", {
         method: "POST",
@@ -139,14 +142,17 @@ export function NFTForm() {
         }),
       });
       const metadataUpdate = await metadataUpdateReq.json();
+      await delay(3000)
       const update = await updateNft(mint as string, metadataUpdate.tokenURI)
-      console.log(update)
       setOpen(false);
       setLoading(false);
       toast({
         title: "Mint Complete! 🎉",
         description: "Please wait a few minutes for NFT to show up on the grid",
       });
+      if (update) {
+        router.push(`${process.env.NEXT_PUBLIC_APP_URL}/nft/${mint}`)
+      }
     } catch (error) {
       setLoading(false);
       toast({

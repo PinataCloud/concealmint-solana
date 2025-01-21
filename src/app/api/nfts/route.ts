@@ -2,31 +2,26 @@ import { NextResponse, type NextRequest } from "next/server";
 import { publicKey } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
-import { PrivyClient } from "@privy-io/server-auth";
 import { fetchDigitalAssetWithTokenByMint } from "@metaplex-foundation/mpl-token-metadata";
+import { verifyAuth } from "@/lib/auth";
 
-const privy = new PrivyClient(
-  process.env.NEXT_PUBLIC_PRIVY_APP_ID as string,
-  process.env.PRIVY_SECRET as string,
-);
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  const accessToken = request.headers.get("Authorization") as string;
-  const auth = await privy.verifyAuthToken(accessToken.replace("Bearer ", ""));
-
-  if (!auth.userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  // const authHeader = request.headers.get("Authorization");
+  // if (!authHeader?.startsWith("Bearer ")) {
+  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // }
 
   try {
-    const user = await privy.getUserById(auth.userId);
 
-    if (!user.wallet?.address) {
-      return NextResponse.json({ error: "No wallet connected" }, { status: 401 });
-    }
-
+    // const token = authHeader.split(" ")[1];
+    // const payload = await verifyAuth(token);
+    // const walletAddress = payload.wallet as string;
+    // if (!walletAddress) {
+    //   return NextResponse.json({ error: "No wallet connected" }, { status: 401 });
+    // }
     const searchParams = request.nextUrl.searchParams;
     const tokenAddress = searchParams.get('tokenAddress');
 
