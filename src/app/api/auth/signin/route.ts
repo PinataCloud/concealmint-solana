@@ -12,7 +12,7 @@ export async function GET() {
       statement: "Sign in to access private NFTs",
       version: "1",
       nonce: Math.random().toString(36).slice(2, 10), // Make sure it's at least 8 chars
-      chainId: "devnet",
+      chainId: "mainnet",
       issuedAt: now.toISOString(),
       resources: [uri!]
     };
