@@ -54,13 +54,11 @@ export default function RootLayout({
           <body
             className={`${geistSans.variable} ${geistMono.variable} font-mono antialiased`}
           >
-            <ThemeProviderWrapper>
-              <AuthProvider>
-                {children}
-                <Toaster />
-                <Analytics />
-              </AuthProvider>
-            </ThemeProviderWrapper>
+            <AuthProvider>
+              {children}
+              <Toaster />
+              <Analytics />
+            </AuthProvider>
           </body>
         </html>
       </UmiProvider>
