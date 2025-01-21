@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "./ui/label";
-import { mintNFT } from "@/lib/mintNFT";
+import { mintNFT, updateNft } from "@/lib/mintNFT";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSolanaWallets, getAccessToken } from "@privy-io/react-auth";
@@ -55,7 +55,7 @@ interface NFTMetadata {
 }
 
 
-export function NFTForm({ getNFTs }: any) {
+export function NFTForm() {
   const [file, setFile] = useState<File | undefined>();
   const [image, setImage] = useState<File | undefined>();
   const [loading, setLoading] = useState(false);
@@ -76,7 +76,6 @@ export function NFTForm({ getNFTs }: any) {
     defaultValues: {
       name: "",
       description: "",
-      externalUrl: "",
     },
   });
 
@@ -115,7 +114,7 @@ export function NFTForm({ getNFTs }: any) {
         body: JSON.stringify({
           name: values.name,
           description: values.description,
-          external_url: values.externalUrl,
+          external_url: "https://solana.concealmint.com",
           image: imageUpload.cid,
           file: fileUpload.cid,
         }),
@@ -123,21 +122,31 @@ export function NFTForm({ getNFTs }: any) {
       const metadataUpload = await metadataUploadReq.json();
 
       const mint = await mintNFT(values.name, metadataUpload.tokenURI);
-      if (!mint) {
-        setLoading(false);
-        toast({
-          title: "Error with Mint",
-          variant: "destructive",
-        });
-      }
+      console.log(mint)
+
+      const metadataUpdateReq = await fetch("/api/metadata", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name: values.name,
+          description: values.description,
+          external_url: `https://solana.concealmint.com/nft/${mint}`,
+          image: imageUpload.cid,
+          file: fileUpload.cid,
+        }),
+      });
+      const metadataUpdate = await metadataUpdateReq.json();
+      const update = await updateNft(mint as string, metadataUpdate.tokenURI)
+      console.log(update)
       setOpen(false);
       setLoading(false);
       toast({
         title: "Mint Complete! 🎉",
         description: "Please wait a few minutes for NFT to show up on the grid",
       });
-      await wait(2000);
-      getNFTs();
     } catch (error) {
       setLoading(false);
       toast({
@@ -157,7 +166,7 @@ export function NFTForm({ getNFTs }: any) {
         }
       }}
     >
-      <Button className="w-full" asChild>
+      <Button className="w-full font-bold" asChild>
         <DialogTrigger>Create NFT</DialogTrigger>
       </Button>
       <DialogContent
@@ -193,22 +202,6 @@ export function NFTForm({ getNFTs }: any) {
                     <Input placeholder="This is a great NFT" {...field} />
                   </FormControl>
                   <FormDescription>Your NFT Description</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="externalUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Website URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://pinata.cloud" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Your Website or Portfolio URL
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

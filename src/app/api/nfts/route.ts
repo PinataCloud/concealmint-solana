@@ -3,6 +3,7 @@ import { publicKey } from '@metaplex-foundation/umi';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { dasApi } from '@metaplex-foundation/digital-asset-standard-api';
 import { PrivyClient } from "@privy-io/server-auth";
+import { fetchDigitalAssetWithTokenByMint } from "@metaplex-foundation/mpl-token-metadata";
 
 const privy = new PrivyClient(
   process.env.NEXT_PUBLIC_PRIVY_APP_ID as string,
@@ -26,27 +27,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No wallet connected" }, { status: 401 });
     }
 
-    const umi = createUmi(process.env.NEXT_PUBLIC_ALCHEMY_URL as string).use(dasApi());
-    const collection = publicKey('2AQCkfmrftMrK4hTLXBKBwGAZYMrKh5CFJrksmQBGy7t')
-    //@ts-ignore
-    const data = await umi.rpc.getAssetsByGroup({
-      groupKey: 'collection',
-      groupValue: collection,
-    });
+    const searchParams = request.nextUrl.searchParams;
+    const tokenAddress = searchParams.get('tokenAddress');
 
-    let nfts = []
-    for (const item of data.items) {
-      if (item.ownership.owner === user.wallet.address) {
-        const nftReq = await fetch(item.content.json_uri)
-        const nftData = await nftReq.json()
-        nfts.push({
-          ...nftData,
-          owner: item.ownership.owner,
-          id: item.id
-        })
-      }
+    if (!tokenAddress) {
+      return NextResponse.json({ error: "Token address is required" }, { status: 400 });
     }
-    return NextResponse.json(nfts, { status: 200 });
+
+    const umi = createUmi(process.env.NEXT_PUBLIC_ALCHEMY_URL as string).use(dasApi());
+    const asset = await fetchDigitalAssetWithTokenByMint(umi, publicKey(tokenAddress));
+
+    if (!asset) {
+      return NextResponse.json({ error: "NFT not found" }, { status: 404 });
+    }
+
+    const nftReq = await fetch(asset.metadata.uri);
+    const nftData = await nftReq.json();
+
+    const nft = {
+      ...nftData,
+      owner: asset.token.owner,
+      id: asset.mint.publicKey
+    };
+
+    return NextResponse.json(nft, { status: 200 });
   } catch (e) {
     console.log(e);
     return NextResponse.json(

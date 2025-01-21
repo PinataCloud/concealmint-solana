@@ -5,12 +5,13 @@ import { NFTGrid } from "@/components/nft-grid";
 import { usePrivy } from "@privy-io/react-auth";
 import { Footer } from "@/components/footer";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { FindNFTForm } from "@/components/find-nft-form";
 
 export default function Home() {
   const { ready, authenticated } = usePrivy();
   const { connected } = useWallet();
 
-  const showNFTs = ready && authenticated && connected;
+  const showNFTs = ready && authenticated;
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-6 max-w-sm mx-auto mt-12 sm:px-0 px-2">
