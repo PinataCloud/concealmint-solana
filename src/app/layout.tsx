@@ -4,9 +4,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { UmiProvider } from "@/providers/umiProvider";
-import Providers from "@/components/providers";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/providers/authProvider";
+import { Analytics } from "@vercel/analytics/react"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -58,6 +58,7 @@ export default function RootLayout({
               <AuthProvider>
                 {children}
                 <Toaster />
+                <Analytics />
               </AuthProvider>
             </ThemeProviderWrapper>
           </body>
